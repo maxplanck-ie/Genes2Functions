@@ -841,7 +841,7 @@ server <- function(input, output, session) {
     colnames(df) = c("GeneID","baseMean","log2FC","pvalue","padj")
     #handle gencode IDs
     if (input$id_type == "ENSEMBL"){
-      if(grepl("\\.[0-9]{1,2}",df$GeneID[1])){df$GeneID<-gsub("\\.[0-9]+","",df$GeneID)}
+      if(grepl("\\.[0-9]{1,2}",df$GeneID[2])){df$GeneID<-gsub("\\.[0-9]+","",df$GeneID)}
     }
     df$Log_BaseMean = log10(df$baseMean)
     df$Log_pvalue = -log10(df$pvalue)
@@ -925,7 +925,7 @@ server <- function(input, output, session) {
     target = na.omit(target)
     background_genes = na.omit(background_genes) 
 
-    lista = list(target,background_genes)
+    lista = list(unique(target[target != ""]),unique(background_genes[background_genes != ""]))
 
     return(lista)
 
