@@ -1,6 +1,7 @@
 
-Rlib = '/data/manke/group/ferrari/ShinyApps/Rlib_3.5'
+#Rlib = '/data/manke/group/ferrari/ShinyApps/Rlib_3.5'
 #Rlib = '/home/ferrari/R/x86_64-redhat-linux-gnu-library/3.5/'
+Rlib="/rstudio/galaxy/.rstudio/R/x86_64-pc-linux-gnu-library/3.6"
 # 
 .libPaths(Rlib)
 # 
