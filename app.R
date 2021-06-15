@@ -1,31 +1,24 @@
+library(shiny)
+library(shinyalert)
+library(shinydashboard)
+library(shinycssloaders)
 
-#Rlib = '/data/manke/group/ferrari/ShinyApps/Rlib_3.5'
-#Rlib = '/home/ferrari/R/x86_64-redhat-linux-gnu-library/3.5/'
-Rlib="/rstudio/galaxy/.rstudio/R/x86_64-pc-linux-gnu-library/3.6"
-# 
-.libPaths(Rlib)
-# 
-library(shiny, lib.loc = Rlib)
-library(shinyalert, lib.loc = Rlib)
-library(shinydashboard, lib.loc = Rlib)
-library(DOSE, lib.loc = Rlib)
-library(enrichplot, lib.loc = Rlib)
-#library(dashboardthemes)
-library(ggplot2, lib.loc = Rlib)
-#library(clusterProfiler, lib.loc = Rlib)
-library(VennDiagram, lib.loc = Rlib)
-library(shinycssloaders, lib.loc = Rlib)
-library(data.table, lib.loc = Rlib)
-library(dplyr, lib.loc = Rlib)
-library(msigdbr, lib.loc = Rlib)
-#require(org.Hs.eg.db, lib.loc = Rlib)
-#require(org.Mm.eg.db, lib.loc = Rlib)
-#require(org.Dm.eg.db, lib.loc = Rlib)
+#library(DOSE)
+library(enrichplot)
+library(ggplot2)
+library(VennDiagram)
+library(data.table)
+library(dplyr)
+library(msigdbr)
 
+library(clusterProfiler)
 
+require(org.Hs.eg.db)
+require(org.Mm.eg.db)
+require(org.Dm.eg.db)
+
+ 
 futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
-
-
 
 ui <- dashboardPage(
   dashboardHeader(title="Genes2Functions", titleWidth = 300),
@@ -791,11 +784,11 @@ ui <- dashboardPage(
                        downloadButton("DDS_1", 'Download Sample Dataset (Compare Cluster - mouse)')
  
                        #tabPanel("Docs",
-                       #        includeHTML("/data/manke/group/shiny/ferrari/clusterProfiler_GOenrich/ShinyApp_documentation/Documentation_ShinyApp_clusterProfiler.html")
+                       #        includeHTML("ShinyApp_documentation/Documentation_ShinyApp_clusterProfiler.html")
                        #        )
                        
                        #htmlOutput("documentation") %>% withSpinner(color="#0dc5c1")
-                       #includeHTML("/data/manke/group/shiny/ferrari/clusterProfiler_GOenrich/ShinyApp_documentation/Documentation_ShinyApp_clusterProfiler.html")
+                       #includeHTML("ShinyApp_documentation/Documentation_ShinyApp_clusterProfiler.html")
               )
       )
       
@@ -821,18 +814,12 @@ server <- function(input, output, session) {
   
   observe({
     req(input$file)
-    library(clusterProfiler, lib.loc = Rlib)
   })
   
   data_in = reactive({
     req(input$file)
-    #library(clusterProfiler, lib.loc = Rlib)
-    #read.csv(input$file$datapath, sep="\t",header=input$header)
     as.data.frame(fread(input$file$datapath))
   })
-
-  #req(input$file)
-  #library(clusterProfiler, lib.loc = Rlib)
 
   data_plot = reactive({
     req(input$file)
@@ -960,10 +947,6 @@ server <- function(input, output, session) {
   ego_result = eventReactive(input$submit_GO, {
 
     #showNotification("Analysis started!")
-
-    require(org.Hs.eg.db)
-    require(org.Mm.eg.db)
-    require(org.Dm.eg.db)
 
     ### translate across IDs
     eg = bitr(target_back()[[1]], fromType=input$id_type, toType=c("ENTREZID","ENSEMBL","SYMBOL"), OrgDb=input$model_organism_new)
@@ -1096,11 +1079,7 @@ server <- function(input, output, session) {
   enricher_result = eventReactive(input$submit_path, {
     
     #showNotification("Analysis started!")
-    
-      require(org.Hs.eg.db)
-      require(org.Mm.eg.db)
-      require(org.Dm.eg.db)
-      
+          
       ### translate across IDs
       eg = bitr(names(target_back_path()[[1]]), fromType=input$id_type, toType=c("ENTREZID","ENSEMBL","SYMBOL"), OrgDb=input$model_organism_new)
       eg = merge(eg,data_plot(), by.x = input$id_type, by.y = "GeneID")
@@ -1111,13 +1090,13 @@ server <- function(input, output, session) {
       if (input$PathDB == "wiki"){
         
         if (input$model_organism_new == "org.Hs.eg.db"){
-          wp2gene = read.csv("/data/manke/group/shiny/ferrari/Genes2Functions/shared_files/wikipath_homo.gmt",sep="\t")
+          wp2gene = read.csv("shared_files/wikipath_homo.gmt",sep="\t")
         }
         else if (input$model_organism_new == "org.Mm.eg.db"){
-          wp2gene = read.csv("/data/manke/group/shiny/ferrari/Genes2Functions/shared_files/wikipath_mouse.gmt",sep="\t")
+          wp2gene = read.csv("shared_files/wikipath_mouse.gmt",sep="\t")
         }
         else if (input$model_organism_new == "org.Dm.eg.db"){
-          wp2gene = read.csv("/data/manke/group/shiny/ferrari/Genes2Functions/shared_files/wikipath_drosophila.gmt",sep="\t")
+          wp2gene = read.csv("shared_files/wikipath_drosophila.gmt",sep="\t")
         }
         
         wp2gene = na.omit(wp2gene)
@@ -1235,10 +1214,6 @@ server <- function(input, output, session) {
     df = data_plot()
     #showNotification("Analysis started!")
     
-    require(org.Hs.eg.db)
-    require(org.Mm.eg.db)
-    require(org.Dm.eg.db)
-    
     ### translate across IDs
     universe = bitr(df$GeneID, fromType=input$id_type, toType=c("ENTREZID","ENSEMBL","SYMBOL"), OrgDb=input$model_organism_new)
     universe  = merge(universe,df, by.x = input$id_type, by.y = "GeneID")
@@ -1249,13 +1224,13 @@ server <- function(input, output, session) {
     if (input$PathDB_gsea == "wiki"){
       
       if (input$model_organism_new == "org.Hs.eg.db"){
-        wp2gene = read.csv("/data/manke/group/shiny/ferrari/Genes2Functions/shared_files/wikipath_homo.gmt",sep="\t")
+        wp2gene = read.csv("shared_files/wikipath_homo.gmt",sep="\t")
       }
       else if (input$model_organism_new == "org.Mm.eg.db"){
-        wp2gene = read.csv("/data/manke/group/shiny/ferrari/Genes2Functions/shared_files/wikipath_mouse.gmt",sep="\t")
+        wp2gene = read.csv("shared_files/wikipath_mouse.gmt",sep="\t")
       }
       else if (input$model_organism_new == "org.Dm.eg.db"){
-        wp2gene = read.csv("/data/manke/group/shiny/ferrari/Genes2Functions/shared_files/wikipath_drosophila.gmt",sep="\t")
+        wp2gene = read.csv("shared_files/wikipath_drosophila.gmt",sep="\t")
       }
       
       wp2gene = na.omit(wp2gene)
@@ -1383,7 +1358,7 @@ server <- function(input, output, session) {
   
   data_in_clust = reactive({
     req(input$file_clust)
-    library(clusterProfiler, lib.loc = Rlib)
+    
     as.data.frame(fread(input$file_clust$datapath))
   })
 
@@ -1495,10 +1470,6 @@ server <- function(input, output, session) {
 
     #showNotification("Analysis started!")
 
-    #require(org.Hs.eg.db, lib.loc = Rlib)
-    #require(org.Mm.eg.db, lib.loc = Rlib)
-    #require(org.Dm.eg.db, lib.loc = Rlib)
-
     ### Define up and down-regulated sets
     df = data_plot()
     up_genes = as.vector(df$GeneID[df$sig == "Significant" & df$log2FC > 0])
@@ -1549,10 +1520,6 @@ server <- function(input, output, session) {
 
   ck_Tab = eventReactive(input$submit_GO_cl2, {
     
-    require(org.Hs.eg.db)
-    require(org.Mm.eg.db)
-    require(org.Dm.eg.db)
-
     clust_tab_def = list()
     clust_tab = clusts_EnrichGO()
     print(names(clust_tab))
@@ -1620,12 +1587,12 @@ server <- function(input, output, session) {
   #output$documentation<-renderUI({includeHTML("/data/manke/group/shiny/ferrari/clusterProfiler_GOenrich/ShinyApp_documentation/Documentation_ShinyApp_clusterProfiler.html")})
   
   df_sample = reactive({
-    df = fread("/data/manke/group/shiny/ferrari/Genes2Functions/shared_files/DEseq_basic_DEresults.tsv")
+    df = fread("shared_files/DEseq_basic_DEresults.tsv")
     return(df)
     })
   
   df_sample_clust = reactive({
-    df = fread("/data/manke/group/shiny/ferrari/Genes2Functions/shared_files/mESC-iNPC_logSignal_H3K79me2_TSSpl3000_5_cl.txt")
+    df = fread("shared_files/mESC-iNPC_logSignal_H3K79me2_TSSpl3000_5_cl.txt")
     return(df)
   })
 
@@ -1651,7 +1618,7 @@ server <- function(input, output, session) {
   output$DDS_v <- downloadHandler(
     filename = "clusterProfiler_vignette.html",
     content = function(con) {
-      file.copy(from="/data/manke/group/shiny/ferrari/Genes2Functions/ShinyApp_documentation/Documentation_ShinyApp_clusterProfiler.html", to=con, overwrite =TRUE)
+      file.copy(from="ShinyApp_documentation/Documentation_ShinyApp_clusterProfiler.html", to=con, overwrite =TRUE)
     }
   )
  
