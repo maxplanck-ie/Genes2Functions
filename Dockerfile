@@ -29,8 +29,8 @@ COPY ./startup.sh /usr/local/bin/startup.sh
 
 COPY app.R /root/clusterProfiler_GOenrich
 
-COPY shared_files /root/clusterProfiler_GOenrich
-COPY ShinyApp_documentation /root/clusterProfiler_GOenrich
+COPY shared_files /root/clusterProfiler_GOenrich/shared_files
+COPY ShinyApp_documentation /root/clusterProfiler_GOenrich/ShinyApp_documentation
 
 CMD ["/usr/local/bin/startup.sh"]
 
