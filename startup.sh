@@ -1,9 +1,4 @@
 #!/bin/bash
 
-#Set up the mounting
-python /usr/local/bin/mounts.py
-
-#R --no-save --no-restore
-
-R -e 'shiny::runApp("/root/clusterProfiler_GOenrich",port=2525,host="0.0.0.0")' #> /data/prcessing/shiny/snakequest.Rout
+R -e 'shiny::runApp("/root/clusterProfiler_GOenrich",port=2525,host="0.0.0.0")'
 
