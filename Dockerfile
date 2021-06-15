@@ -1,30 +1,36 @@
-FROM centos:7.2.1511
+FROM rocker/r-ver
 
-RUN yum install -y epel-release && \
-    yum install -y R-3.6.0-1.el7.x86_64 wget nano vim-X11 vim-common vim-enhanced vim-minimal ypbind yp-tools ypserv autofs nfs-utils rsyslog && \
-    yum install -y openssl-devel curl libcurl-devel mesa-libGLU freetype-devel libpng-devel libtiff-devel libjpeg-turbo-devel cairo-devel libxml2-devel xorg-x11-server-devel libX11-devel libXt-devel  && \
-    mkdir /data && \
-    mkdir /etc/automount && \
-    R -e "install.packages(c('shiny','crosstalk','rmarkdown'), repos='https://cran.rstudio.com/',dependencies=TRUE)" 
+# this is necessary for R-package enrichplot (zlib.h and others)
+RUN apt-get update  \
+    && apt-get -y install libxml2 libglpk-dev zlib1g-dev \
+    && rm -rf /tmp/* \
+    && apt-get autoremove -y \
+    && apt-get autoclean -y \
+    && rm -rf /var/lib/apt/lists/*
 
+RUN R -e 'install.packages(c("shiny","shinyalert","shinydashboard","ggplot2", "VennDiagram", "shinycssloaders", "data.table", "dplyr", "msigdbr", "BiocManager"), repos="https://cran.rstudio.com/",dependencies=TRUE, clean=TRUE)' && \
+ R -e 'BiocManager::install(c("enrichplot","clusterProfiler"))'
+
+RUN R -e 'BiocManager::install("org.Hs.eg.db")'
+RUN R -e 'BiocManager::install("org.Mm.eg.db")'
+RUN R -e 'BiocManager::install("org.Dm.eg.db")'  
+
+RUN mkdir /root/clusterProfiler_GOenrich
+    
 # Fix the time zone
 RUN unlink /etc/localtime && \
     ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 
-ADD ./mounts.py /usr/local/bin/mounts.py
-ADD ./startup.sh /usr/local/bin/startup.sh
+EXPOSE 2525
 
-VOLUME ["/export/"]
-
-RUN mkdir /root/clusterProfiler_GOenrich
-#COPY ui.R /root/snakequest
-#COPY server.R /root/snakequest
-COPY app.R /root/clusterProfiler_GOenrich
-#COPY aux.R /root/scRNAseq
 
 COPY Rprofile.site /usr/lib/R/etc/
+COPY ./startup.sh /usr/local/bin/startup.sh
 
-EXPOSE 2525
+COPY app.R /root/clusterProfiler_GOenrich
+
+COPY shared_files /root/clusterProfiler_GOenrich
+COPY ShinyApp_documentation /root/clusterProfiler_GOenrich
 
 CMD ["/usr/local/bin/startup.sh"]
 
